@@ -10,9 +10,15 @@
 #import <Photos/Photos.h>
 #import "MBProgressHUD.h"
 
+
 @interface D8iOS : NSObject <MBProgressHUDDelegate>
 
-+ (void)uploadImageToServer: (PHAsset *) asset
++(void)verifyDrupalSite: (NSURL *)drupalSiteURL
+/* withView: (UIView *)view */
+             completion:(void (^)(NSError *))completion;
+// completion:(void (^)(BOOL verified))completion;
+
++(void)uploadImageToServer: (PHAsset *) asset
                   withImage: (UIImageView *) assetImage
                  withinView: (UIViewController *) navController;
 
@@ -30,10 +36,6 @@
 +(void)uploadFilewithFileName: (NSString *)fileName
                 andDataString:(NSString *)base64EncodedString
                      withView:(UIView *)view;
-
-+(void)verifyDrupalSite: (NSURL *)drupalSiteURL
-               withView: (UIView *)view
-             completion:(void (^)(BOOL verified))completion;
 
 +(void)createUserAccountwithUserName: (NSString *)userName
                             password:(NSString *)password

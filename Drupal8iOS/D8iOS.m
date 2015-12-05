@@ -6,6 +6,11 @@
 //  Copyright © 2015 PikLips. All rights reserved.
 //  Written by Vivek Pandya
 //
+/** MAS: This class isolates much of the DIOS Session activity into easily
+ *  copyable methods.  Note that NSAppTransportSecurity / NSAllowsArbitraryLoads
+ *  is set to 'YES' in the info.plist for development.  You will need a secure
+ *  connection for production.
+ */
 #import "Developer.h"
 #import "D8iOS.h"
 #import "Comment.h"
@@ -22,7 +27,62 @@
 
 @implementation D8iOS
 
-+ (void) uploadImageToServer: (PHAsset *) asset withImage: (UIImageView *) assetImage withinView: (UIViewController *)navController {
+/** @function verifyDrupalSite
+ *  @param drupalSiteURL a valid URL according to RFC 2396 RFCs 1738 and 1808
+ *  @abstract This verifies the user input and tests to see if the URL points to a live host
+ *  by validating the remote host with NSURLConnection.
+ *  @seealso drupal-ios-sdk, AFNetworking
+ *  @discussion needs to validate the Drupal host, too (TBD)
+ *  @return N/A
+ *  @throws N/A
+ *  @updated
+ */
++(void)verifyDrupalSite: (NSURL *)drupalSiteURL
+             completion:(void (^)(NSError *))completion {
+
+    DIOSSession *sharedSession = [DIOSSession sharedSession];
+    sharedSession.baseURL = drupalSiteURL;
+    
+    /** Vivek: By default, DIOSSession has AFJSONResponseSerializer which causes a http-based response
+     *  with status code 2XX to be an unacceptable response type.
+     *  So, to execute the request we change ResponseSerializer temporarily.
+     *
+     */
+    [sharedSession setResponseSerializer:[AFHTTPResponseSerializer serializer]];
+    
+    sharedSession.signRequests = NO;
+    
+    [sharedSession GET:[drupalSiteURL absoluteString]
+            parameters:nil
+               success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                   // Success block
+                   // Currently this storage per user
+                   // storing a validated D8 site to user preferences
+                   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                   [defaults setObject:[drupalSiteURL absoluteString] forKey:DRUPAL8SITE];
+                   sharedSession.signRequests = YES;
+
+                   NSError *noError = [NSError errorWithDomain:NSURLErrorDomain
+                                                          code:operation.response.statusCode
+                                                      userInfo:nil];
+                   D8D(@"verifyDrupalSite: sharedSession thinks it succeeded for %@, code %ld", drupalSiteURL, operation.response.statusCode);
+                   completion(noError); // success
+               } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                   // Faliure block
+                   D8D(@"verifyDrupalSite: sharedSession Failed for %@, code %@", drupalSiteURL, error);
+                   completion(error);
+               }];
+    
+    // Restore the ResponseSerializer to JSONSerializer
+    [sharedSession setResponseSerializer:[AFJSONResponseSerializer serializer]];
+}
+
+/**
+ *
+ *
+ *
+ */
++(void)uploadImageToServer: (PHAsset *) asset withImage: (UIImageView *) assetImage withinView: (UIViewController *)navController {
     
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:navController.view];
     [navController.view addSubview:hud];
@@ -31,11 +91,11 @@
     hud.labelText = @"Uploading image ...";
     
     // Regiser for HUD callbacks so we can remove it from the window at the right time
-    hud.delegate = nil;  //MAS: problem: this is for an instance object instead of a class
+    hud.delegate = nil;  //MAS: problem - this is for an instance object instead of a class
     
     [hud show:YES];
     
-    // This is temporary work around for 200 response code instead of 201 , the drupal responds with text/html format here we explicitly ask for JSON so that AFNwteorking will not report error
+    // This is temporary work-around for 200 response code instead of 201, the drupal responds with text/html format here we explicitly ask for JSON so that AFNwteorking will not report error
     DIOSSession *sharedSession = [DIOSSession sharedSession];
     [sharedSession.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -66,7 +126,7 @@
                                        // Faliure block
                                        
                                        long statusCode = operation.response.statusCode;
-                                       // This can happen when POST is with out Authorization details or login fails
+                                       // This can happen when POST is without Authorization details or login fails
                                        if ( statusCode == 401 ) {
                                            [hud hide:YES];
                                            DIOSSession *sharedSession = [DIOSSession sharedSession];
@@ -107,7 +167,7 @@
                                            [alert show];
                                        }
                                        // This to handle unacceptable content-type: text/html error
-                                       // This is very bad fix , but we have to keep this untill drupal patch is not updated to address this issue
+                                       // This is very bad fix, but we have to keep this as long as drupal patch is not updated to address this issue
                                        else if (statusCode == 200){
                                            UIImageView *imageView;
                                            UIImage *image = [UIImage imageNamed:@"37x-Checkmark.png"];
@@ -136,11 +196,13 @@
                                        
                                    }];
 }
-+ (NSString *)encodeToBase64String:(UIImage *)image {
++(NSString *)encodeToBase64String:(UIImage *)image {
     return [UIImagePNGRepresentation(image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
-
-
+/**
+ *
+ *
+ */
 +(void)getCommentDataforNodeID:(NSString *)nodeID withView:(UIView *)view completion:(void (^)(NSMutableArray *commentList))completion {
     
     MBProgressHUD  *hud = [[MBProgressHUD alloc] initWithView:view];
@@ -172,7 +234,6 @@
                               if (completion) {
                                   completion(commentList);
                               }
-                              
                           }
                           failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                               // faliure block
@@ -231,6 +292,10 @@
     }
 }
 
+/**
+ *
+ *
+ */
 +(void)getFileDatafromPath: (NSString *)path
                   withView:(UIView *)view
                 completion:(void (^)(NSMutableArray *fileList))completion{
@@ -328,6 +393,10 @@
     
 }
 
+/**
+ *
+ *
+ */
 +(void)getArticleDatawithView:(UIView *)view
                    completion:(void (^)(NSMutableArray *))completion{
     MBProgressHUD  *hud = [[MBProgressHUD alloc] initWithView:view];
@@ -412,6 +481,10 @@
     
 }
 
+/**
+ *
+ *
+ */
 +(void)uploadFilewithFileName:(NSString *)fileName
                 andDataString:(NSString *)base64EncodedString
                      withView:(UIView *)view{
@@ -508,96 +581,11 @@
                                    }];
 }
 
-+(void)verifyDrupalSite: (NSURL *)drupalSiteURL
-               withView: (UIView *)view
-             completion:(void (^)(BOOL verified))completion{
-    MBProgressHUD  *hud = [[MBProgressHUD alloc] initWithView:view];
-    [view addSubview:hud];
-    
-    hud.delegate = nil;
-    hud.labelText = @"Verifying Drupal 8 site";
-    [hud show:YES];
-    // a valid URL according to RFC 2396 RFCs 1738 and 1808
-    
-    // store the URL String to user's default settings
-    
-    // Validate the remote host with NSURLConnection
-    
-    // Validating URL with drupal-ios-sdk
-    
-    DIOSSession *sharedSession = [DIOSSession sharedSession];
-    sharedSession.baseURL = drupalSiteURL;
-    
-    /* Vivek: By default, DIOSSession has AFJSONResponseSerializer which causes a http-based response
-     *  with status code 2XX to be an unacceptable response type.
-     *  So to execute the request we change ResponseSerializer temporarely
-     *
-     */
-    [sharedSession setResponseSerializer:[AFHTTPResponseSerializer serializer]];
-    
-    sharedSession.signRequests = NO;
-    
-    [sharedSession GET:[drupalSiteURL absoluteString]
-            parameters:nil
-               success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                   // Success block
-                   // Currently this storage per user
-                   // storing a validated D8 site to user preferences
-                   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                   [defaults setObject:[drupalSiteURL absoluteString] forKey:DRUPAL8SITE];
-                   sharedSession.signRequests = YES;
-                   UIImageView *imageView;
-                   UIImage *image = [UIImage imageNamed:@"37x-Checkmark.png"];
-                   imageView = [[UIImageView alloc] initWithImage:image];
-                   
-                   hud.customView = imageView;
-                   hud.mode = MBProgressHUDModeCustomView;
-                   
-                   hud.labelText = @"Completed";
-                   dispatch_async(dispatch_get_main_queue(), ^{
-                       // need to put main theread on sleep for 2 second so that "Completed" HUD stays on for 2 seconds
-                       sleep(1);
-                       [hud hide:YES];
-                       if (completion) {
-                           completion(YES);
-                       }
-                   });
-                   
-               } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                   // Faliure block
-                   [hud hide:YES];
-                   // Display alert on faliure
-                   long statusCode = operation.response.statusCode;
-                   
-                   if ( statusCode == 403 ) {
-                       
-                       UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Drupal8iOS"
-                                                                      message:[NSString stringWithFormat:@"Error with %@ . It seems that you are already logged in to other site.",error.localizedDescription]
-                                                                     delegate:self
-                                                            cancelButtonTitle:@"Dismiss"
-                                                            otherButtonTitles: nil];
-                       [alert show];
-                       
-                   }
-                   else {
-                       
-                       UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Drupal8iOS"
-                                                                      message:[NSString stringWithFormat:@"An error occured while connecting to the URL with %@",error.localizedDescription]
-                                                                     delegate:self
-                                                            cancelButtonTitle:@"Dismiss"
-                                                            otherButtonTitles: nil];
-                       [alert show];
-                   }
-                   completion(NO);
-                   
-               }];
-    
-    // Restore the ResponseSerializer to JSONSerializer
-    [sharedSession setResponseSerializer:[AFJSONResponseSerializer serializer]];
-    
-    
-}
 
+/**
+ *
+ *
+ */
 +(void)createUserAccountwithUserName:(NSString *)userName
                             password:(NSString *)password
                             andEmail:(NSString *)email
@@ -698,6 +686,10 @@
     
 }
 
+/**
+ *
+ *
+ */
 +(void)updateUserAccoutwithUserName: (NSString *)userName
                     currentPassword:(NSString *)currentPass
                               email:(NSString *)email
@@ -913,7 +905,7 @@
                                           }
                                           
                                           else {
-                                              /* Vivek: Email and Password change requires existing password to be specified.
+                                              /** Vivek: Email and Password change requires existing password to be specified.
                                                *  The code above tries to capture those requirements, but if some how it is
                                                *  missed then Drupal REST will provide propper error, reflected by this alert.
                                                */
@@ -963,6 +955,10 @@
     
 }
 
+/**
+ *
+ *
+ */
 +(void)loginwithUserName:(NSString *)userName
                 password:(NSString *)password
                 withView:(UIView *)view
@@ -975,7 +971,7 @@
     hud.labelText = @"Logging in";
     [hud show:YES];
     
-    /*
+    /**
      *  Login with Kyle's iOS-SDK
      */
     
@@ -1026,8 +1022,8 @@
                           }
                           else if ( statusCode == 0 ) {
                               
-                              UIAlertView *alert = [[UIAlertView alloc]initWithTitle:[NSString stringWithFormat:@"No URL to connect"]
-                                                                             message:@"Plese specify a Drupal 8 site first \n"
+                              UIAlertView *alert = [[UIAlertView alloc]initWithTitle:[NSString stringWithFormat:@"No Drupal Host to connect"]
+                                                                             message:@"Please specify a Drupal 8 site first \n"
                                                                             delegate:nil
                                                                    cancelButtonTitle:@"Dismiss"
                                                                    otherButtonTitles:nil];
@@ -1051,6 +1047,10 @@
     
 }
 
+/**
+ *
+ *
+ */
 +(NSString *)basicAuthStringforUsername:(NSString *)username Password:(NSString *)password{
     
     NSString * userNamePasswordString = [NSString stringWithFormat:@"%@:%@",username,password]; // "username:password"
@@ -1063,7 +1063,10 @@
     return  basicAuthString;
     
 }
-
+/**
+ *
+ *
+ */
 +(void)deleteFilewithFileID:(NSString *)fileID
                    withView:(UIView *)view
                  completion:(void (^)(BOOL))completion{
@@ -1087,7 +1090,7 @@
                                        
                                        hud.labelText = @"Completed";
                                        dispatch_async(dispatch_get_main_queue(), ^{
-                                           // need to put main theread on sleep for 2 second so that "Completed" HUD stays on for 2 seconds
+                                           // need to put main thread on sleep for 2 second so that "Completed" HUD stays on for 2 seconds
                                            sleep(1);
                                            [hud hide:YES];
                                        });
@@ -1100,7 +1103,7 @@
                                        [hud hide:YES];
                                        
                                        long statusCode = operation.response.statusCode;
-                                       // This can happen when GET is with out Authorization details
+                                       // This can happen when GET is without Authorization details
                                        if (statusCode == 401) {
                                            DIOSSession *sharedSession = [DIOSSession sharedSession];
                                            
@@ -1144,13 +1147,17 @@
     
 }
 
+/**
+ *
+ *
+ */
 +(void)getArticlewithNodeID:(NSString *)nodeID
                    withView:(UIView *)view
                  completion:(void (^)(NSMutableDictionary *))completion{
     
     DIOSSession *sharedSession = [DIOSSession sharedSession];
-    /*  Vivek: I have used NSUserDefaults to store DRUPAL8SITE because it is not sensitive data
-     *  like password. So, according to Apple it is OK to use, but in the future for some professional app.
+    /**  Vivek: I have used NSUserDefaults to store DRUPAL8SITE because it is not sensitive data
+     *  such as the password. So, according to Apple it is OK to use, but in the future for some professional app.
      *  If it is required to store Drupal site information per User than it would be better to use a
      *  simple framework based on Keychain access to sperate each user's data.
      */
@@ -1202,7 +1209,7 @@
     
     User *user = [User sharedInstance];
     
-    // JSON for POST on commnet resource
+    // JSON for POST on comment resource
     NSDictionary *params =
     @{
       
@@ -1338,5 +1345,28 @@
     
 }
 
+/** Notify User Title with Notification, Response Text, and error (if applicable)
+ *  This provides a warning to the user.
+ * @param Title Text string of notification
+ * @param Notification Text string to be used in notification
+ * @param NotifyError NSError if applicable
+ * @param Response Text string that goes with exiting the notification
+ * @return bool Indication that message was sent (may not always be applicable)
+ * @see UIAlertView or UIAlertController
+ */
+-(void)notifyUserWithTitle:(NSString *)title
+                  withView:(UIViewController *)view
+            onNotification:(NSString *)notification
+              withResponse:(NSString *)response
+             optionalError:(NSError *)notifyError {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                message: (notifyError ? [NSString stringWithFormat:notification, notifyError.localizedDescription] :                                                               notification)
+                                        preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:response
+                                                            style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {}];
+    [alert addAction:defaultAction];
+    [view presentViewController:alert animated:YES completion:nil];
+}
 
 @end

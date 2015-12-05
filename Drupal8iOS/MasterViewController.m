@@ -8,8 +8,8 @@
 
 #import "MasterViewController.h"
 #import "DetailViewController.h"
-#import "Developer.h"  // MAS: for development only, see which
 #import "SpecifyDrupalSiteViewController.h"
+#import "Developer.h"  // MAS: for development only, see which
 
 @interface MasterViewController ()
 
@@ -26,43 +26,6 @@
         self.clearsSelectionOnViewWillAppear = NO;
         self.preferredContentSize = CGSizeMake(320.0, 600.0);
     }
-}
-
-
-/* MAS: We use this code to control the menu, we can eliminate checking for site, login, etc, 
- *  in the other scenes.
- *  For example, if the site is not specified, the specify site view would be the
- *  only menu item.  If the site was specified but user not signed-in then only
- *  the specify site view and login menu items would be visible, etc.
- *
- *  Vivek: We do these checks here with viewWillAppear method, as this is the view which gets
- *  loaded first. This will use an application Launch screen to be hold until we are done
- *  with checks, configure our view, and show it to the user. But as this may take some
- *  time due to network call so it is required to intimate the user that what is going on. 
- *  Similar to Facebook app loading screen. To do so we can add one loading view controller that 
- *  performs all these tasks and also shows some status of all operation to user.
- */
-
-- (BOOL)checkDrupalURL {
-    /* MAS: Check to see if Drupal site was previously set
-     *      This logic chould determine whether the app has store the Drupal URL and it is still valid
-     */
-    
-    // logic here
-    
-    return NO;
-
-}
-
-- (BOOL)checkUserLogin {
-    /* MAS: Check to see if Drupal login information was previously set
-     *      This logic chould determine whether the app has store the Drupal user and it is still valid
-     */
-    
-    // logic here
-    
-    return NO;
-    
 }
 
 - (void) loadMenus {

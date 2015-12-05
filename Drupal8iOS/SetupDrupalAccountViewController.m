@@ -61,41 +61,6 @@ bool emailStatus = NO;
 }
 
 -(IBAction)createUserAccount:(id)sender {
-    /*  Vivek: This validates format of userName, userEmail, and userPassword, then submits it
-     *  to a Drupal site as new account.
-     *  Report error alert for duplicate userName and allow retry.
-     *  Validations are done in separate methods.
-     */
-    
-    /* This is the example HAL+JSON for creating User
-     {"_links":{
-     "type":{
-     "href":"http://localhost/dr8b14/rest/type/user/user"  // This _links part will be taken care by drupal-ios-sdk
-     }
-     },
-     "langcode": [
-     {
-     "value": "en"
-     }
-     ],
-     "name": [
-     {
-     "value": "Pandya"
-     }
-     ],
-     "mail": [
-     {
-     "value": "pandya@mail.com"
-     }
-     ],
-     "pass": [
-     {
-     "value": "CH92viveK"
-     }
-     ],
-     }
-     
-     */
     
     [D8iOS createUserAccountwithUserName:self.drupalUserName.text
                                 password:self.drupalUserPassword.text
