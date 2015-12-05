@@ -18,7 +18,7 @@
 		44511BD81B56D8380002A3CF /* D8iOSUISplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44511BD71B56D8380002A3CF /* D8iOSUISplitViewController.m */; };
 		44511BDD1B56FF7B0002A3CF /* ViewArticlesTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44511BDC1B56FF7B0002A3CF /* ViewArticlesTableViewController.m */; };
 		44511BE01B56FFE20002A3CF /* DownloadPictureViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44511BDF1B56FFE20002A3CF /* DownloadPictureViewController.m */; };
-		44B8AF921BD4A4CA00CB17CE /* SetUpForDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 44B8AF911BD4A4CA00CB17CE /* SetUpForDemo.m */; settings = {ASSET_TAGS = (); }; };
+		44B8AF921BD4A4CA00CB17CE /* SetUpForDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 44B8AF911BD4A4CA00CB17CE /* SetUpForDemo.m */; };
 		44CF1DE81B51D97C00FC66EE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CF1DE71B51D97C00FC66EE /* main.m */; };
 		44CF1DEB1B51D97C00FC66EE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CF1DEA1B51D97C00FC66EE /* AppDelegate.m */; };
 		44CF1DEE1B51D97C00FC66EE /* MasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CF1DED1B51D97C00FC66EE /* MasterViewController.m */; };
@@ -33,7 +33,7 @@
 		44CF1E191B524E2700FC66EE /* LogoutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CF1E181B524E2700FC66EE /* LogoutViewController.m */; };
 		44CF1E1C1B5251FB00FC66EE /* ManageUserAccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CF1E1B1B5251FB00FC66EE /* ManageUserAccountViewController.m */; };
 		44CF1E251B52619100FC66EE /* UploadFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CF1E241B52619100FC66EE /* UploadFileViewController.m */; };
-		44E22EDC1BD1D53E00B4BC69 /* D8iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 44E22EDB1BD1D53E00B4BC69 /* D8iOS.m */; settings = {ASSET_TAGS = (); }; };
+		44E22EDC1BD1D53E00B4BC69 /* D8iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 44E22EDB1BD1D53E00B4BC69 /* D8iOS.m */; };
 		CF0A72711BB809C400300569 /* AddCommentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CF0A72701BB809C400300569 /* AddCommentViewController.m */; };
 		CF195B111B84778F00003A2B /* FileJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = CF195B101B84778F00003A2B /* FileJSON.m */; };
 		CF195B141B847AD400003A2B /* FileDetailsTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CF195B131B847AD400003A2B /* FileDetailsTableViewCell.m */; };
@@ -442,7 +442,7 @@
 		44CF1DDA1B51D97B00FC66EE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0640;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = PikLips;
 				TargetAttributes = {
 					44CF1DE11B51D97B00FC66EE = {
@@ -638,6 +638,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -709,6 +710,7 @@
 				INFOPLIST_FILE = Drupal8iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "PikLips-LLC.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 			};
@@ -724,6 +726,7 @@
 				INFOPLIST_FILE = Drupal8iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "PikLips-LLC.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 			};
@@ -743,6 +746,7 @@
 				);
 				INFOPLIST_FILE = Drupal8iOSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "PikLips-LLC.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Drupal8iOS.app/Drupal8iOS";
 			};
@@ -758,6 +762,7 @@
 				);
 				INFOPLIST_FILE = Drupal8iOSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "PikLips-LLC.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Drupal8iOS.app/Drupal8iOS";
 			};
